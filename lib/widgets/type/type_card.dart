@@ -1,10 +1,13 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
+import '../../models/joke_model.dart';
 import '../../utils/capitalize.dart';
 
 class TypeCard extends StatelessWidget {
   final String type;
-
-  const TypeCard({super.key, required this.type});
+  final Function(Joke) updateFavorite;
+  const TypeCard({super.key, required this.type, required this.updateFavorite,});
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +16,17 @@ class TypeCard extends StatelessWidget {
       child: InkWell(
           borderRadius: BorderRadius.circular(10),
           splashColor: Colors.red[50],
-          onTap: () => {
-            Navigator.pushNamed(context, '/jokes',
-                arguments: type)
+          onTap: () {
+            Map<String, dynamic> args = HashMap();
+            args["type"] = type;
+            args["updateFavorite"] = updateFavorite;
+            if (type == "Favorite"){
+              Navigator.pushNamed(context, '/favorite',
+                arguments: args);
+            }
+            else{
+              Navigator.pushNamed(context, '/jokes',
+                arguments: args);}
           },
           child: Container(
             margin: const EdgeInsets.all(5.0),

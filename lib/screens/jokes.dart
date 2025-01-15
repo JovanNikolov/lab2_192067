@@ -3,8 +3,11 @@ import 'package:lab2_192067/services/api_services.dart';
 import '../models/joke_model.dart';
 import '../utils/capitalize.dart';
 import '../widgets/joke/joke_back_button.dart';
+import 'package:lab2_192067/utils/global_notifier.dart';
+import 'package:provider/provider.dart';
 
 class Jokes extends StatefulWidget{
+
   const Jokes({super.key});
 
   @override
@@ -14,6 +17,7 @@ class Jokes extends StatefulWidget{
 class _JokesState extends State<Jokes>{
   late Future<List<Joke>> futureJokes;
   String type = "";
+  late Function(Joke) updateFavorite;
 
   @override
   void initState() {
@@ -23,12 +27,32 @@ class _JokesState extends State<Jokes>{
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments = ModalRoute.of(context)?.settings.arguments as String;
-    type = arguments;
-    print("id: $type");
-    if (type.isNotEmpty) {
-      futureJokes = ApiServices.getJokesFromJokeAPI(type);
+    final modalRoute = ModalRoute.of(context);
+    final routeSettings = modalRoute?.settings;
+    // print(routeSettings.toString());
+    final arguments = routeSettings?.arguments as Map<String, dynamic>;
+
+    if (arguments != null) {
+      final args = arguments.map((key, value) => MapEntry(key as String, value));
+
+      type = args['type'] as String;
+      updateFavorite = args['updateFavorite'] as Function(Joke);
+
+      print("Type: $type");
+
+      if (type.isNotEmpty) {
+        futureJokes = ApiServices.getJokesFromJokeAPI(type);
+      }
     }
+  }
+
+  void toggleFavorite(Joke joke) {
+    // print(joke.setup.toString());
+    Provider.of<GlobalNotifier>(context, listen: false).updateFavoriteJokes(joke);
+    updateFavorite(joke);
+    setState(() {
+      joke.isFavorite = !joke.isFavorite;
+    });
   }
 
   @override
@@ -56,12 +80,30 @@ class _JokesState extends State<Jokes>{
 
           final jokes = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(8.0),
             itemCount: jokes.length,
             itemBuilder: (context, index) {
               final joke = jokes[index];
-              return ListTile(
-                title: Text(joke.setup),
-                subtitle: Text(joke.punchline),
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey, width: 1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8),
+                  title: Text(joke.setup,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  subtitle: Text(joke.punchline),
+                  leading: IconButton(
+                    onPressed: () => toggleFavorite(joke),
+                    color: joke.isFavorite ? Colors.yellow[800] : Colors.blue,
+                    icon: Icon(Icons.sentiment_very_satisfied),
+                  ),
+                ),
               );
             },
           );

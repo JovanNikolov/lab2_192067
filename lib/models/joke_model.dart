@@ -3,8 +3,10 @@ class Joke{
   String setup;
   String punchline;
   int id;
+  bool isFavorite = false;
 
   Joke({required this.type, required this.setup, required this.punchline, required this.id});
+  
 
   Joke.fromJson(Map<String, dynamic> data)
     : type = data['type'],

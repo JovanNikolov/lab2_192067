@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:lab2_192067/services/notification_services.dart';
+import '../models/joke_model.dart';
 import '../services/api_services.dart';
 import '../widgets/type/type_grid.dart';
 
@@ -12,6 +14,21 @@ class Home extends StatefulWidget{
 
 class _HomeState extends State<Home> {
   List<String> types = [];
+  List<Joke> favoriteJokes = [];
+
+  void updateFavorite(Joke joke){
+    setState(() {
+      joke.isFavorite = !joke.isFavorite;
+      if (joke.isFavorite) {
+        favoriteJokes.add(joke);
+      } else {
+        favoriteJokes.removeWhere((j) => j == joke);
+      }
+    });
+    if (favoriteJokes.isNotEmpty){
+      favoriteJokes.map((joke) => print(joke.setup));
+    }
+  }
 
   @override
   void initState() {
@@ -22,6 +39,7 @@ class _HomeState extends State<Home> {
   void getJokeTypesFromAPI() async {
     ApiServices.getJokeTypesFromJokeAPI().then((response) {
       List<String> data = List.from(json.decode(response.body));
+      data.add("Favorite");
       setState(() {
         types = data;
       });
@@ -47,7 +65,9 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: TypeGrid(types: types),
+      body: TypeGrid(
+          types: types,
+          updateFavorite: updateFavorite,),
     );
   }
 }

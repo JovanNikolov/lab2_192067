@@ -12,9 +12,9 @@ class ApiServices{
   static Future<List<Joke>> getJokesFromJokeAPI(String type) async{
     final response = await http.get(Uri.parse('https://official-joke-api.appspot.com/jokes/$type/ten'));
     if (response.statusCode == 200) {
-      print("Success: ${response.body}");
+      // print("Success: ${response.body}");
       var data = jsonDecode(response.body) as List;
-      print("data $data");
+      // print("data $data");
       return data.map((joke) => Joke.fromJson(joke)).toList();
     }
     else{
